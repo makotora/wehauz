@@ -12,10 +12,11 @@
 #include "cdr_info.h"
 #include "input.h"
 #include "call_stats.h"
+#include "superfasthash.h"
 
 using namespace std;
 
-int simple_hash(char* num, int len)
+uint32_t simple_hash(const char* num, int len)
 {
 	char area[4];
 	strncpy(area, num, 3);
@@ -42,7 +43,7 @@ int execute_input(FILE* input, int max_args, int max_len, Hash_table** ht1, Hash
 		commands_count++;
 
 		/*print the line you just read*/
-		cout << commands_count << ": " << line << "\n";
+		//cout << commands_count << ": " << line << "\n";
 
 		/*split line to words*/
 		words[0] = strtok(line," \t\n");
@@ -143,7 +144,7 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 		}
 		else if (arg_count != 2)
 		{
-			cout << "find: Invalid arguments!" << endl;
+			cout << "find: Invalid arguments!\n";
 			return -1;
 		}
 
@@ -190,7 +191,7 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 		}
 		else if (arg_count != 2)
 		{
-			cout << "find: Invalid arguments!" << endl;
+			cout << "find: Invalid arguments!\n";
 			return -1;
 		}
 
@@ -230,12 +231,17 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 		bucket_size = (*ht1)->entries_per_bucket * sizeof(Bucket_entry);
 		max_infos = (*ht1)->infos_per_entry;
 
+		cout << "Hash table 1 statistics:\n";
+		(*ht1)->print_hash_stats();
+		cout << "Hash table 2 statistics:\n";
+		(*ht2)->print_hash_stats();
+
 		(*ht2)->free_infos();
 		delete *ht1;
 		delete *ht2;
 		/*delete hp*/
-		*ht1 = new Hash_table(&simple_hash, max_buckets1, bucket_size, max_infos);
-		*ht2 = new Hash_table(&simple_hash, max_buckets2, bucket_size, max_infos);
+		*ht1 = new Hash_table(&hash, max_buckets1, bucket_size, max_infos);
+		*ht2 = new Hash_table(&hash, max_buckets2, bucket_size, max_infos);
 		/*create heap*/
 
 
@@ -245,17 +251,17 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 	{
 		if ( strcmp(words[1], "hashtable1") == 0)
 		{
-			cout << "---Printing hashtable1---\n" << endl;
+			cout << "---Printing hashtable1---\n\n";
 			(*ht1)->print();
 		}
 		else if ( strcmp(words[1], "hashtable2") == 0)
 		{
-			cout << "---Printing hashtable2---\n" << endl;
+			cout << "---Printing hashtable2---\n\n";
 			(*ht2)->print();
 		}
 		else
 		{
-			cout << "Invalid print command!\n" << endl;
+			cout << "Invalid print command!\n\n";
 		}
 
 	}
@@ -266,6 +272,11 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 	}
 	else if ( strcmp(words[0],"exit") == 0 || strcmp(words[0],"exit()") == 0)
 	{
+		cout << "Hash table 1 statistics:\n";
+		(*ht1)->print_hash_stats();
+		cout << "Hash table 2 statistics:\n";
+		(*ht2)->print_hash_stats();
+
 		(*ht2)->free_infos();
 		delete *ht1;
 		delete *ht2;

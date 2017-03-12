@@ -9,6 +9,7 @@
 #define HASH_TABLE_H_
 
 #include "cdr_info.h"
+#include "superfasthash.h"
 #include <cstdlib>
 #include <iostream>
 
@@ -97,12 +98,14 @@ class Hash_table
 {
 	public:
 		Bucket** buckets;
-		int (*hash)(char *data, int len);/*pointer to hash_function used*/
+		uint32_t (*hash)(const char *data, int len);/*pointer to hash_function used*/
 		int max_buckets;
 		int entries_per_bucket;
 		int infos_per_entry;
+		int total_buckets;
+		int collisions;
 
-		Hash_table(int (*hashfun)(char*,int) , int& max_bucks, int& bucket_size, int& max_infos);
+		Hash_table(uint32_t (*hashfun)(const char*,int) , int& max_bucks, int& bucket_size, int& max_infos);
 		~Hash_table();
 
 		void print();
@@ -113,6 +116,8 @@ class Hash_table
 		int delete_info(char* hash_key, char* num1, char* cdrid, int free_info);
 
 		Bucket_entry* get_entry(char* hash_key, char* strnum1);
+
+		void print_hash_stats();
 
 };
 

@@ -21,7 +21,7 @@ Number::Number(char* number)
 
 	if ( strlen(number) != 14 )
 	{
-		cout << "Invalid  phone number" << endl;
+		cout << "Invalid  phone number\n";
 		return;
 	}
 
@@ -29,7 +29,7 @@ Number::Number(char* number)
 
 	if ( strlen(token) != 3 )
 	{
-		cout << "Invalid  phone number" << endl;
+		cout << "Invalid  phone number\n";
 		return;
 	}
 	else
@@ -41,7 +41,7 @@ Number::Number(char* number)
 
 	if ( strlen(token) != 10)
 	{
-		cout << "Invalid  phone number" << endl;
+		cout << "Invalid  phone number\n";
 		return;
 	}
 	else
@@ -82,7 +82,7 @@ Date::Date(char * date)
 {
 	if ( strlen(date) != 8 )
 	{
-		cout << "Invalid date" << endl;
+		cout << "Invalid date\n";
 		return;
 	}
 
@@ -141,7 +141,7 @@ Time::Time(char* time)
 
 	if ( strlen(time) != 5 )
 	{
-		cout << "Invalid  time" << endl;
+		cout << "Invalid  time\n";
 		return;
 	}
 
@@ -149,7 +149,7 @@ Time::Time(char* time)
 
 	if ( strlen(token) != 2 )
 	{
-		cout << "Invalid  time" << endl;
+		cout << "Invalid  time\n";
 		return;
 	}
 	else
@@ -161,7 +161,7 @@ Time::Time(char* time)
 
 	if ( strlen(token) != 2)
 	{
-		cout << "Invalid  phone number" << endl;
+		cout << "Invalid  phone number\n";
 		return;
 	}
 	else
@@ -214,12 +214,12 @@ CdrInfo::CdrInfo(char* id,char* call, char* calle, char* d, char* t, char* dur, 
 
 void CdrInfo::print()
 {
-	cout << "\t\t\t--- Call id: " << cdr_uniq_id << "---" << endl;
+	cout << "\t\t\t--- Call id: " << cdr_uniq_id << "---\n";
 	cout << "\t\t\tCaller: "; caller.print(); cout << endl;
 	cout << "\t\t\tCallee: "; callee.print(); cout << endl;
 	cout << "\t\t\tDate: "; date.print(); cout << endl;
 	cout << "\t\t\tInit Time: "; init_time.print(); cout << endl;
-	cout << "\t\t\tDuration: " << duration << " minutes" << endl;
+	cout << "\t\t\tDuration: " << duration << " minutes\n";
 	cout << "\t\t\tType: " << type << endl;
 	cout << "\t\t\tTarrif: " << tarrif << endl;
 	cout << "\t\t\tFault condition: " << fault_condition << '\n' << endl;
@@ -234,7 +234,7 @@ bool CdrInfo::isInRange(Time* time1, Date* date1, Time* time2, Date* date2)
 	{
 		if (time1 != time2)
 		{
-			cout << "isInRange: Invalid arguments!" << endl;
+			cout << "isInRange: Invalid arguments!\n";
 			return false;
 		}
 	}
@@ -243,7 +243,7 @@ bool CdrInfo::isInRange(Time* time1, Date* date1, Time* time2, Date* date2)
 	{
 		if (date1 != date2)
 		{
-			cout << "isInRange: Invalid arguments!" << endl;
+			cout << "isInRange: Invalid arguments!\n";
 			return false;
 		}
 	}

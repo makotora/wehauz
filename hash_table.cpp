@@ -28,7 +28,7 @@ Bucket_entry::~Bucket_entry()
 
 void Bucket_entry::print()
 {
-	cout << "\t\t| "; number1.print(); cout << " |" << endl;;
+	cout << "\t\t| "; number1.print(); cout << " |\n";;
 	Call_infos* current = first_infos;
 	int count = 0;
 
@@ -41,7 +41,7 @@ void Bucket_entry::print()
 }
 void Bucket_entry::print_range(Time* time1, Date* date1, Time* time2, Date* date2)
 {
-	cout << "\n\t\t| "; number1.print(); cout << " |\n" << endl;
+	cout << "\n\t\t| "; number1.print(); cout << " |\n\n";
 	Call_infos* current = first_infos;
 
 	while (current != NULL)
@@ -104,7 +104,7 @@ int Bucket_entry::delete_info(char* cdrid, int free_info)
 
 	if (target_index == -1)
 	{
-		cout << "Delete: No call record with id '" << cdrid << "'" << endl;
+		cout << "Delete: No call record with id '" << cdrid << "'\n";
 		return -1;
 	}
 
@@ -229,8 +229,8 @@ int Bucket::find_entry(Number& num1)
 
 
 /*Class Hash_table*/
-Hash_table::Hash_table(int (*hashfun)(char*,int) , int& max_bucks, int& bucket_size, int& max_infos)
-:hash(hashfun), max_buckets(max_bucks), infos_per_entry(max_infos)
+Hash_table::Hash_table(uint32_t (*hashfun)(const char*,int) , int& max_bucks, int& bucket_size, int& max_infos)
+:hash(hashfun), max_buckets(max_bucks), infos_per_entry(max_infos), total_buckets(0), collisions(0)
 {
 	entries_per_bucket = bucket_size / sizeof(Bucket_entry);
 	buckets = new Bucket*[max_bucks];
@@ -255,13 +255,13 @@ void Hash_table::print()
 	int i;
 	for (i=0;i<max_buckets;i++)
 	{
-		cout << "\n| Hash_table[" << i << "] |" << endl;
+		cout << "\n| Hash_table[" << i << "] |\n";
 
 		Bucket* current = buckets[i];
 		int count = 0;
 		while (current != NULL)
 		{
-			cout << "\t| Bucket " << ++count << " |" << endl;
+			cout << "\t| Bucket " << ++count << " |\n";
 			current->print();
 			current = current->next;
 		}
@@ -270,7 +270,7 @@ void Hash_table::print()
 
 void Hash_table::print_range(char* hash_key, char* strnum1, Time* time1, Date* date1, Time* time2, Date* date2)
 {
-	int bucket_num = (*hash)(hash_key, strlen(hash_key)) % max_buckets;
+	uint32_t bucket_num = (*hash)(hash_key, strlen(hash_key)) % max_buckets;
 
 	Bucket* current = buckets[bucket_num];
 	int bucket_entry = -1;
@@ -292,7 +292,7 @@ void Hash_table::print_range(char* hash_key, char* strnum1, Time* time1, Date* d
 	}
 	else
 	{
-		cout << "No call record for number: '"; num1.print(); cout << "'" << endl;
+		cout << "No call record for number: '"; num1.print(); cout << "'\n";
 	}
 }
 
@@ -300,7 +300,7 @@ void Hash_table::print_range(char* hash_key, char* strnum1, Time* time1, Date* d
 void Hash_table::free_infos()
 {
 	int i;
-	for (i=0;i<max_buckets;i++)
+	for 	(i=0;i<max_buckets;i++)
 	{
 		Bucket* current = buckets[i];
 
@@ -315,9 +315,15 @@ void Hash_table::free_infos()
 
 int Hash_table::insert_info(char* hash_key, char* strnum1, char* strnum2, CdrInfo* info)
 {
-	int bucket_num = (*hash)(hash_key, strlen(hash_key)) % max_buckets;
+	uint32_t bucket_num = (*hash)(hash_key, strlen(hash_key)) % max_buckets;
 
 	Bucket* current = buckets[bucket_num];
+	/*for hash statistics*/
+	if (current == NULL)
+	{
+		total_buckets++;
+	}
+
 	int bucket_entry = -1;
 
 	Number num1(strnum1);
@@ -340,13 +346,19 @@ int Hash_table::insert_info(char* hash_key, char* strnum1, char* strnum2, CdrInf
 
 	if (bucket_entry != -1)
 	{
-//		cout << "Insert: A bucket entry for number "; num1.print(); cout << " exists! Inserting there" << endl;
+//		cout << "Insert: A bucket entry for number "; num1.print(); cout << " exists! Inserting there\n";
 		current->entries[bucket_entry]->insert_info(num2, info);
 	}
 	else
 	{
-//		cout << "Insert: No bucket entry for number "; num1.print(); cout << ".Creating a new bucket entry!" << endl;
+		/*for hash statistics*/
+		if (current != NULL)
+		{
+			collisions++;
+		}
+//		cout << "Insert: No bucket entry for number "; num1.print(); cout << ".Creating a new bucket entry!\n";
 		/*SINCE WE SEARCHED TILL THE LAST BUCKET OF THE LIST,CURRENT IS THE LAST IN THE LIST*/
+
 		if (current == NULL)/*there is not bucket in this hash table entry.Add one now*/
 		{
 			new_bucket = new Bucket(entries_per_bucket, infos_per_entry);
@@ -372,7 +384,7 @@ int Hash_table::insert_info(char* hash_key, char* strnum1, char* strnum2, CdrInf
 
 int Hash_table::delete_info(char* hash_key, char* strnum1, char* cdrid, int free_info)
 {
-	int bucket_num = (*hash)(hash_key, strlen(hash_key)) % max_buckets;
+	uint32_t bucket_num = (*hash)(hash_key, strlen(hash_key)) % max_buckets;
 
 	Bucket* first_bucket = buckets[bucket_num];
 	Bucket* current_bucket = first_bucket;
@@ -396,13 +408,13 @@ int Hash_table::delete_info(char* hash_key, char* strnum1, char* cdrid, int free
 
 	if (bucket_entry != -1)
 	{
-		//cout << "Delete: Found bucket entry for number "; num1.print(); cout << ".Deleting!" << endl;
+		//cout << "Delete: Found bucket entry for number "; num1.print(); cout << ".Deleting!\n";
 		current_entry = current_bucket->entries[bucket_entry];
 		current_entry->delete_info(cdrid, free_info);
 
 		if ( current_entry->isEmpty() )
 		{
-			//cout << "Bucket is now empty.Deleting bucket" << endl;
+			//cout << "Bucket is now empty.Deleting bucket\n";
 			delete current_entry;
 			/*REPLACE THIS BUCKET'S DELETED ENTRY WITH THE LAST ENTRY IN THE LIST OF BUCKETS (delete bucket if last got empty)*/
 
@@ -421,7 +433,7 @@ int Hash_table::delete_info(char* hash_key, char* strnum1, char* cdrid, int free
 				if (first_bucket == last_bucket)/*if first bucket is last bucket.we are deleting the only bucket entry in this bucket*/
 				{/*so delete this (now empty) bucket and note that hash_table has no buckets anymore*/
 					delete first_bucket;
-					//cout << "deleting first bucket!" << endl;
+					//cout << "deleting first bucket!\n";
 					buckets[bucket_num] = NULL;/*Make it NULL for the hash_table*/
 				}
 				else
@@ -430,7 +442,7 @@ int Hash_table::delete_info(char* hash_key, char* strnum1, char* cdrid, int free
 					current_bucket = first_bucket;
 					while (current_bucket->next != last_bucket)
 						current_bucket = current_bucket->next;
-					//cout << "deleting last bucket!" << endl;
+					//cout << "deleting last bucket!\n";
 					current_bucket->next = NULL;
 					delete last_bucket;
 				}
@@ -442,7 +454,7 @@ int Hash_table::delete_info(char* hash_key, char* strnum1, char* cdrid, int free
 	}
 	else
 	{
-		//cout << "Delete: No bucket entry for number "; num1.print(); cout << " !Nothing to delete." << endl;
+		//cout << "Delete: No bucket entry for number "; num1.print(); cout << " !Nothing to delete.\n";
 		return 1;
 	}
 }
@@ -450,7 +462,7 @@ int Hash_table::delete_info(char* hash_key, char* strnum1, char* cdrid, int free
 
 Bucket_entry* Hash_table::get_entry(char* hash_key, char* strnum1)
 {
-	int bucket_num = (*hash)(hash_key, strlen(hash_key)) % max_buckets;
+	uint32_t bucket_num = (*hash)(hash_key, strlen(hash_key)) % max_buckets;
 
 	Bucket* current_bucket = buckets[bucket_num];
 	Number num1(strnum1);
@@ -473,4 +485,12 @@ Bucket_entry* Hash_table::get_entry(char* hash_key, char* strnum1)
 	else
 		return NULL;
 
+}
+
+
+void Hash_table::print_hash_stats()
+{
+	cout << "---Printing hash table statistics---\n";
+	cout << "Hash table usage: " << ((float)(total_buckets) / (float)(max_buckets)) * 100 << "%\n";
+	cout << "Number of collisions: " << collisions << endl;
 }

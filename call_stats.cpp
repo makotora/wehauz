@@ -8,7 +8,7 @@
 #include "call_stats.h"
 
 CallNode::CallNode(Number& num, Bucket_entry* in)
-: number(num), next(NULL), in_calls(in), isolated(1){}
+: number(num), in_calls(in), isolated(1), next(NULL){}
 
 
 CallNode::~CallNode()
@@ -81,8 +81,6 @@ void CallGraph::find_isolated()
 
 	CallNode* checkNode;
 	CallNode* otherNode;
-	Number* otherNumber;
-
 
 	checkNode = first;
 
@@ -117,7 +115,7 @@ void CallGraph::print()
 
 	if (first == NULL)
 	{
-		cout << "No such customers found!" << endl;
+		cout << "No such customers found!\n";
 	}
 
 	while (current_node != NULL)
@@ -135,7 +133,7 @@ void CallGraph::print_isolated()
 
 	if (first == NULL)
 	{
-		cout << "No such customers found!" << endl;
+		cout << "No such customers found!\n";
 	}
 
 	while (current_node != NULL)
@@ -168,7 +166,6 @@ void indist(char* caller1, char* caller2, Hash_table* ht1, Hash_table* ht2)
 	/*check if those who communicated with caller1 have also communicated with caller2*/
 	Call_infos* current_infos;
 	int infos_count;
-	Call_infos* checkInfos;
 	Call_info** infos;
 
 	Bucket_entry* in_entry;
@@ -238,9 +235,9 @@ void indist(char* caller1, char* caller2, Hash_table* ht1, Hash_table* ht2)
 //	if (caller2_out != NULL)
 //		caller2_in->print();
 
-//	cout << "Printing graph" << endl;
+//	cout << "Printing graph\n";
 //	graph->print();
-//	cout << "Now using remove communications..." << endl;
+//	cout << "Now using remove communications...\n";
 	graph->find_isolated();
 	graph->print_isolated();
 	cout << endl;
