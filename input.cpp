@@ -43,7 +43,7 @@ int execute_input(FILE* input, int max_args, int max_len, Hash_table** ht1, Hash
 		commands_count++;
 
 		/*print the line you just read*/
-		//cout << commands_count << ": " << line << "\n";
+		cout << commands_count << ": " << line << "\n";
 
 		/*split line to words*/
 		words[0] = strtok(line," \t\n");
@@ -80,6 +80,8 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 	Date* date1 = NULL;
 	Time* time2 = NULL;
 	Date* date2 = NULL;
+	Time* tempt;
+	Date* tempd;
 	int arg_count;
 	int max_buckets1;
 	int max_buckets2;
@@ -128,11 +130,25 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 			{
 				time1 = new Time(words[2]);
 				time2 = new Time(words[3]);
+
+				if ((*time2) < (*time1))
+				{
+					tempt = time1;
+					time1 = time2;
+					time2 = tempt;
+				}
 			}
 			else
 			{
 				date1 = new Date(words[2]);
 				date2 = new Date(words[3]);
+
+				if ((*date2) < (*date1))
+				{
+					tempd = date1;
+					date1 = date2;
+					date2 = tempd;
+				}
 			}
 		}
 		else if (arg_count == 6)
@@ -141,6 +157,26 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 			date1 = new Date(words[3]);
 			time2 = new Time(words[4]);
 			date2 = new Date(words[5]);
+
+			if ((*date2) < (*date1))
+			{
+				tempd = date1;
+				date1 = date2;
+				date2 = tempd;
+
+				tempt = time1;
+				time1 = time2;
+				time2 = tempt;
+			}
+			else if ((*date1) == (*date2))
+			{
+				if ((*time2) < (*time1))
+				{
+					tempt = time1;
+					time1 = time2;
+					time2 = tempt;
+				}
+			}
 		}
 		else if (arg_count != 2)
 		{

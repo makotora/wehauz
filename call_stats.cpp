@@ -230,11 +230,6 @@ void indist(char* caller1, char* caller2, Hash_table* ht1, Hash_table* ht2)
 		current_infos = current_infos->next;
 	}
 
-//	if (caller2_out != NULL)
-//		caller2_out->print();
-//	if (caller2_out != NULL)
-//		caller2_in->print();
-
 //	cout << "Printing graph\n";
 //	graph->print();
 //	cout << "Now using remove communications...\n";

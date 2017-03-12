@@ -257,32 +257,14 @@ bool CdrInfo::isInRange(Time* time1, Date* date1, Time* time2, Date* date2)
 	}
 	else if (time1 == NULL)
 	{
-		if ( (*date1) < (*date2) )
-			return (*date1) <= date && date <= (*date2);
-		else
-			return (*date2) <= date && date <= (*date1);
+		return (*date1) <= date && date <= (*date2);
 	}
 	else if (date1 == NULL)
 	{
-		if ( (*time1) < (*time2) )
-			return (*time1) <= init_time && init_time <= (*time2);
-		else
-			return (*time2) <= init_time && init_time <= (*time1);
+		return (*time1) <= init_time && init_time <= (*time2);
 	}
 	else
 	{
-		/*(if not in place)fix position of dates,times according to date*/
-		if ( (*date2) < (*date1) )
-		{
-			tempd = date1;
-			date1 = date2;
-			date2 = tempd;
-
-			tempt = time1;
-			time1 = time2;
-			time2 = tempt;
-		}
-		/*date1 is the oldest date*/
 		/*if its between the dates its certainly in range*/
 		if ( (*date1) < date && date < (*date2) )
 		{
@@ -294,10 +276,7 @@ bool CdrInfo::isInRange(Time* time1, Date* date1, Time* time2, Date* date2)
 			/*range is on the same day*/
 			if (date1 == date2)
 			{
-				if ( (*time1) < (*time2) )
-					return (*time1) <= init_time && init_time <= (*time2);
-				else
-					return (*time2) <= init_time && init_time <= (*time1);
+				return (*time1) <= init_time && init_time <= (*time2);
 			}
 			else if (date == *date1)
 			{
