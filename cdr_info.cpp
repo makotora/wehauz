@@ -248,9 +248,6 @@ bool CdrInfo::isInRange(Time* time1, Date* date1, Time* time2, Date* date2)
 		}
 	}
 
-	Date* tempd;
-	Time* tempt;
-
 	if (time1 == NULL && date1 == NULL)
 	{
 		return true;

@@ -41,7 +41,7 @@ void Bucket_entry::print()
 }
 void Bucket_entry::print_range(Time* time1, Date* date1, Time* time2, Date* date2)
 {
-	cout << "\n\t\t| "; number1.print(); cout << " |\n\n";
+	//cout << "\n\t\t| "; number1.print(); cout << " |\n\n";
 	Call_infos* current = first_infos;
 
 	while (current != NULL)

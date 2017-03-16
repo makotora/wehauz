@@ -19,7 +19,7 @@ Call_info::Call_info(Number& num2, CdrInfo* info)
 
 void Call_info::print()
 {
-	//cout << "\t\t\t|"; number2.print(); cout << "|\n";
+	cout << "\t\t\t|"; number2.print(); cout << "|\n";
 	infoPtr->print();
 }
 

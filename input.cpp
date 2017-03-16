@@ -80,8 +80,6 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 	Date* date1 = NULL;
 	Time* time2 = NULL;
 	Date* date2 = NULL;
-	Time* tempt;
-	Date* tempd;
 	int arg_count;
 	int max_buckets1;
 	int max_buckets2;
@@ -131,23 +129,18 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 				time1 = new Time(words[2]);
 				time2 = new Time(words[3]);
 
-				if ((*time2) < (*time1))
-				{
-					tempt = time1;
-					time1 = time2;
-					time2 = tempt;
-				}
 			}
 			else
 			{
 				date1 = new Date(words[2]);
 				date2 = new Date(words[3]);
 
-				if ((*date2) < (*date1))
-				{
-					tempd = date1;
-					date1 = date2;
-					date2 = tempd;
+				if ((*date1) > (*date2) )
+				{/*error.invalid range*/
+					cout << "Invalid range! date1 must be before or the same as date2!" << endl;
+					delete date1;
+					delete date2;
+					return -1;
 				}
 			}
 		}
@@ -158,25 +151,16 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 			time2 = new Time(words[4]);
 			date2 = new Date(words[5]);
 
-			if ((*date2) < (*date1))
-			{
-				tempd = date1;
-				date1 = date2;
-				date2 = tempd;
+			if ((*date1) > (*date2) )
+			{/*error.invalid range*/
+				cout << "Invalid range! date1 must be before or the same as date2!" << endl;
+				delete date1;
+				delete date2;
+				delete time1;
+				delete time2;
+				return -1;
+			}
 
-				tempt = time1;
-				time1 = time2;
-				time2 = tempt;
-			}
-			else if ((*date1) == (*date2))
-			{
-				if ((*time2) < (*time1))
-				{
-					tempt = time1;
-					time1 = time2;
-					time2 = tempt;
-				}
-			}
 		}
 		else if (arg_count != 2)
 		{
@@ -211,11 +195,20 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 			{
 				time1 = new Time(words[2]);
 				time2 = new Time(words[3]);
+
 			}
 			else
 			{
 				date1 = new Date(words[2]);
 				date2 = new Date(words[3]);
+
+				if ((*date1) > (*date2) )
+				{/*error.invalid range*/
+					cout << "Invalid range! date1 must be before or the same as date2!" << endl;
+					delete date1;
+					delete date2;
+					return -1;
+				}
 			}
 		}
 		else if (arg_count == 6)
@@ -224,10 +217,21 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 			date1 = new Date(words[3]);
 			time2 = new Time(words[4]);
 			date2 = new Date(words[5]);
+
+			if ((*date1) > (*date2) )
+			{/*error.invalid range*/
+				cout << "Invalid range! date1 must be before or the same as date2!" << endl;
+				delete date1;
+				delete date2;
+				delete time1;
+				delete time2;
+				return -1;
+			}
+
 		}
 		else if (arg_count != 2)
 		{
-			cout << "find: Invalid arguments!\n";
+			cout << "lookup: Invalid arguments!\n";
 			return -1;
 		}
 
@@ -244,6 +248,7 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 			delete date1;
 			delete date2;
 		}
+
 
 	}
 	else if ( strcmp(words[0],"indist") == 0)
@@ -319,7 +324,10 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 		/*delete hp*/
 
 		return 1;
-
+	}
+	else
+	{
+		cout << "Unknown command!" << endl;
 	}
 
 
