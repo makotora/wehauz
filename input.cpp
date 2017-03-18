@@ -323,10 +323,20 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2, MaxHeap** 
 		}
 		else if (arg_count == 6)
 		{
-			time1 = new Time(words[2]);
-			date1 = new Date(words[3]);
-			time2 = new Time(words[4]);
-			date2 = new Date(words[5]);
+			if (strlen(words[2]) == 5)/*if time is first*/
+			{
+				time1 = new Time(words[2]);
+				date1 = new Date(words[3]);
+				time2 = new Time(words[4]);
+				date2 = new Date(words[5]);
+			}
+			else/*date is first*/
+			{
+				date1 = new Date(words[2]);
+				time1 = new Time(words[3]);
+				date2 = new Date(words[4]);
+				time2 = new Time(words[5]);
+			}
 
 			if ((*date1) > (*date2) )
 			{/*error.invalid range*/

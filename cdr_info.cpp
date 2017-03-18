@@ -276,7 +276,10 @@ bool CdrInfo::isInRange(Time* time1, Date* date1, Time* time2, Date* date2)
 	}
 	else if (date1 == NULL)
 	{
-		return (*time1) <= init_time && init_time <= (*time2);
+		if (*time1 <= *time2)
+			return (*time1) <= init_time && init_time <= (*time2);
+		else/*for example 18:00 1:00 should return anything NOT between 1:00 and 18:00*/
+			return !((*time2) <= init_time && init_time <= (*time1));
 	}
 	else
 	{
@@ -291,7 +294,10 @@ bool CdrInfo::isInRange(Time* time1, Date* date1, Time* time2, Date* date2)
 			/*range is on the same day*/
 			if (date1 == date2)
 			{
-				return (*time1) <= init_time && init_time <= (*time2);
+				if (*time1 <= *time2)
+					return (*time1) <= init_time && init_time <= (*time2);
+				else/*for example 18:00 1:00 should return anything NOT between 1:00 and 18:00*/
+					return !((*time2) <= init_time && init_time <= (*time1));
 			}
 			else if (date == *date1)
 			{

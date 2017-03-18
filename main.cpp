@@ -26,6 +26,8 @@ int main()
 	FILE* operations_file = NULL;
 	float* charges;
 
+	operations_file = fopen("/home/mt/Desktop/DI/Syspro/prj1/myinput2.txt", "r");
+
 	charges_file = fopen("charge-config.txt", "r");
 	if (charges_file == NULL)
 	{
@@ -44,7 +46,9 @@ int main()
 	MaxHeap* hp = new MaxHeap(number_compare, number_print);/*create a heap with Numbers*/
 
 	int start = time(NULL);
-	int commands_read = execute_input(stdin, 6, 100, &ht1, &ht2, &hp, charges);
+	int commands_read;
+	commands_read = execute_input(operations_file, 6, 100, &ht1, &ht2, &hp, charges);
+	commands_read = execute_input(stdin, 6, 100, &ht1, &ht2, &hp, charges);
 	cout << "Commands count: " << commands_read << endl;
 	cout << "Time elapsed: " << time(NULL) - start << " seconds" << endl;
 
