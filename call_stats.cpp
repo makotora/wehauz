@@ -6,6 +6,7 @@
  */
 
 #include "call_stats.h"
+#include "heap.h"
 
 CallNode::CallNode(Number& num, Bucket_entry* in)
 : number(num), in_calls(in), isolated(1), next(NULL){}
@@ -193,7 +194,7 @@ void indist(char* caller1, char* caller2, Hash_table* ht1, Hash_table* ht2)
 					in_entry = ht2->get_entry(numstring, numstring);
 					graph->insert(checkNumber, in_entry);
 
-					free(numstring);
+					delete[] numstring;
 				}
 			}
 		}
@@ -222,7 +223,7 @@ void indist(char* caller1, char* caller2, Hash_table* ht1, Hash_table* ht2)
 					in_entry = ht2->get_entry(numstring, numstring);
 					graph->insert(checkNumber, in_entry);
 
-					free(numstring);
+					delete[] numstring;
 				}
 			}
 		}
@@ -238,7 +239,95 @@ void indist(char* caller1, char* caller2, Hash_table* ht1, Hash_table* ht2)
 	cout << endl;
 
 	delete graph;
+}
 
+
+
+void topdest(char* caller, Hash_table* ht1)
+{
+	Number caller_num(caller);
+
+	Bucket_entry* entry = ht1->get_entry(caller, caller);
+
+	if (entry == NULL)
+	{
+		cout << "No calls found\n";
+		return;
+	}
+
+	MaxHeap heap(string_compare, string_print);
+	HeapNode* node;
+	Call_infos* current_infos = entry->first_infos;
+	Call_info** infos;
+	int count;
+	int max_calls;
+	int num_calls;
+	char* area;
+
+	while (current_infos != NULL)
+	{
+		count = current_infos->count;
+		infos = current_infos->infos;
+		for (int i=0;i<count;i++)
+		{
+			Number& checkNumber = infos[i]->number2;
+			node = heap.find_node(checkNumber.area);
+
+			if (node == NULL)/*a node for this area doesnt exist in the heap yet*/
+			{
+				area = new char[4];
+				strcpy(area, checkNumber.area);
+				heap.push(area, 1);/*initialise its counter to one*/
+			}
+			else
+			{
+				heap.update(node, 1);/*add one to the counter for that country*/
+			}
+		}
+
+		current_infos = current_infos->next;
+	}
+
+	node = heap.pop();/*there is at least one node.we checked at the beginning*/
+	max_calls = node->sum;
+	area = (char*) node->data;
+	cout << "Country code: " << area << ", Calls made: " << max_calls << endl;
+	delete[] area;
+	delete node;
+
+	node = heap.pop();
+	if (node != NULL)
+	{
+		num_calls = node->sum;
+		area = (char*) node->data;
+	}
+	else
+	{
+		return;
+	}
+
+	while (num_calls == max_calls)
+	{
+		cout << "Country code: " << area << ", Calls made: " << max_calls << endl;
+		delete[] area;
+		delete node;
+		node = heap.pop();
+
+		if (node != NULL)
+		{
+			num_calls = node->sum;
+			area = (char*) node->data;
+		}
+		else
+		{
+			return;
+		}
+	}
+
+	delete[] area;
+	delete node;
+
+	heap.delete_datas();/*delete all remaining data in the heap (destructor wont do it)*/
 }
 
 

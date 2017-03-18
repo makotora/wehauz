@@ -95,7 +95,7 @@ class CdrInfo
 		Time init_time;
 		int duration;
 		int type;
-		float tarrif;
+		int tarrif;
 		int fault_condition;
 
 		CdrInfo(char* id,char* call, char* calle, char* d, char* t, char* dur, char* typ, char* tar, char* f);

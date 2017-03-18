@@ -22,6 +22,18 @@ using namespace std;
 
 int main()
 {
+	FILE* charges_file = NULL;
+	FILE* operations_file = NULL;
+	float* charges;
+
+	charges_file = fopen("charge-config.txt", "r");
+	if (charges_file == NULL)
+	{
+		cout << "Error.Charges file does not exist!" << endl;
+		exit(1);
+	}
+	charges = read_charges(charges_file);
+
 	int max_buckets1 = 10;
 	int max_buckets2 = 10;
 	int bucket_size = 1000;
@@ -29,62 +41,16 @@ int main()
 
 	Hash_table* ht1 = new Hash_table(&hash, max_buckets1, bucket_size, max_infos);
 	Hash_table* ht2 = new Hash_table(&hash, max_buckets2, bucket_size, max_infos);
-	/*Heap* hp;*/
+	MaxHeap* hp = new MaxHeap(number_compare, number_print);/*create a heap with Numbers*/
 
 	int start = time(NULL);
-	int commands_read = execute_input(stdin, 6, 100, &ht1, &ht2);
+	int commands_read = execute_input(stdin, 6, 100, &ht1, &ht2, &hp, charges);
 	cout << "Commands count: " << commands_read << endl;
 	cout << "Time elapsed: " << time(NULL) - start << " seconds" << endl;
 
-	PathStack* stack;
-	MaxHeap* heap = new MaxHeap();
-//	stack = heap->find_path_to(12);
-//	stack->print();
-//	delete stack;
-//	stack = heap->find_path_to(15);
-//	stack->print();
-//	delete stack;
-//	stack = heap->find_path_to(7);
-//	stack->print();
-//	delete stack;
-	Number* num = new Number("030-1234567890");
-	heap->push(num, 1);
-	heap->push(num, 2);
-	heap->push(num, 3);
-	heap->push(num, 4);
-	heap->push(num, 5);
-	heap->push(num, 6);
-	heap->print();
 
-//	HeapNode* node;
-//	node = heap->pop();
-//	cout << "Popped; " << node->sum << endl;
-//	delete node;
-//	node = heap->pop();
-//	cout << "Popped; " << node->sum << endl;
-//	delete node;
-//	node = heap->pop();
-//	cout << "Popped; " << node->sum << endl;
-//	delete node;
-//	node = heap->pop();
-//	cout << "Popped; " << node->sum << endl;
-//	delete node;
-//	node = heap->pop();
-//	cout << "Popped; " << node->sum << endl;
-//	delete node;
-//	node = heap->pop();
-//	cout << "Popped; " << node->sum << endl;
-//	Number* popnum = (Number*) node->data;
-//	popnum->print();
-//	delete node;
-
-	heap->topk(50);
-
-//	heap->print();
-
-
-	delete heap;
-	delete num;
-
+	delete[] charges;
+	fclose(charges_file);
+/*REMEMBER TO CLOSE FILES AND FREE*/
 	return 0;
 }

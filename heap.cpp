@@ -5,6 +5,7 @@
  *      Author: mt
  */
 #include <iostream>
+#include <iomanip>
 #include "heap.h"
 
 using namespace std;
@@ -24,29 +25,40 @@ HeapNode::~HeapNode()
 		delete right;
 }
 
-void HeapNode::print(int level)
+void HeapNode::print(void (*print_fun)(void* data), int level)
 {
 	for (int i=0;i<level;i++)
 		cout << "\t";
-	cout << ": " << sum;
-//	if (parent != NULL)
-//		cout << " parent: " << parent->sum;
-	cout <<	endl;
+
+	(*print_fun)(data);
+	cout << ": " << fixed << setprecision(2) << sum << endl;
+
 	if (left != NULL)
 	{
-		left->print(level+1);
+		left->print(print_fun, level+1);
 	}
 	if (right != NULL)
 	{
-		right->print(level+1);
+		right->print(print_fun, level+1);
 	}
 }
 
 
+void HeapNode::delete_chaptrs()
+{
+	if (left != NULL)
+		left->delete_chaptrs();
+	if (right != NULL)
+			right->delete_chaptrs();
+
+	char* chrptr = (char*) data;
+	delete[] chrptr;
+}
+
 
 /*class MaxHeap*/
-MaxHeap::MaxHeap()
-: root(NULL), count(0), income(0){}
+MaxHeap::MaxHeap(int (*data_cmp)(void*,void*), void (*print_f)(void*))
+: root(NULL), count(0), income(0), data_comp(data_cmp), print_fun(print_f){}
 
 
 MaxHeap::~MaxHeap()
@@ -212,11 +224,39 @@ HeapNode* MaxHeap::pop()
 	return old_root;
 }
 
+HeapNode* MaxHeap::find_node(void* target)
+{
+	return find_node_rec(root, target);
+}
+
+
+HeapNode* MaxHeap::find_node_rec(HeapNode* node, void* target)
+{
+	if (node == NULL)
+		return NULL;
+
+	HeapNode* left_ret;
+	HeapNode* right_ret;
+	//cout << "find_node_rec: ";number->print();cout << endl;
+
+	if ( (*data_comp)(target, node->data))
+		return node;
+
+	left_ret = find_node_rec(node->left, target);
+	if (left_ret != NULL)
+		return left_ret;
+	right_ret = find_node_rec(node->right, target);
+	if (right_ret != NULL)
+		return right_ret;
+
+	return NULL;
+
+}
+
 
 void MaxHeap::Heapify(HeapNode* node)
 {
-	print();
-	cout << "\t\t||\n\t\t||\n_" << endl;
+//	print();
 	while (node->parent != NULL)
 	{
 		if (node->parent->sum >= node->sum)/*if parent has a >= value than node*/
@@ -226,8 +266,6 @@ void MaxHeap::Heapify(HeapNode* node)
 		swap_nodes(node->parent, node);/*swap the nodes in the heap,and make the changes needed for the heap o still be intact*/
 //		cout << "Heapify moved up" << node->sum << endl;
 //		print();
-//		cout << "\n\n";
-//		cout << "\t\t||\n\t\t||\n_" << endl;
 	}
 
 }
@@ -263,7 +301,7 @@ void MaxHeap::print()
 {
 	cout << "Printing heap.Total income is: " << income << endl;
 	if (root != NULL)
-		root->print(0);
+		root->print(print_fun, 0);
 }
 
 
@@ -325,12 +363,14 @@ void MaxHeap::swap_nodes(HeapNode* parent, HeapNode* child)
 
 void MaxHeap::topk(float k)
 {
-	if (k > 100)
-		cout << "Invalid k given.k must be between 0 and 100" << endl;
+	if (k > 100 || k < 0)
+		cout << "Invalid k given.k must be more than 0 and less or equal to 100" << endl;
 	if (root == NULL)
 	{
 		cout << "Topk: Heap is empty!" << endl;
 	}
+	if (k == 0)/*0 percent means noone..*/
+		return;
 
 	MaxHeap heap;
 
@@ -340,18 +380,20 @@ void MaxHeap::topk(float k)
 
 
 	HeapNode* next_max = root;
-	Number* next_num;
+	HeapNode* next_node;
 	float next_sum = root->sum;
 	float current_income = next_sum;
+	Number* next_num = (Number*) next_max->data;
+	/*print roots percent*/
+	next_num->print();cout << " " << next_sum / income * 100 << "% (value: " << next_sum << ")" << endl;
 
 
 	while (current_income < target_income)
 	{
-		next_num = (Number*) next_max->data;
-		next_num->print();cout << " " << next_sum / income << "% (value: " << next_sum << ")" << endl;
 		if (next_max == NULL)/*Heap is now empty,nothing more to print*/
 		{
 			cout << "Topk: Heap is empty!" << endl;
+			return;
 		}
 
 		if (next_max->left != NULL)
@@ -360,8 +402,55 @@ void MaxHeap::topk(float k)
 		if (next_max->right != NULL)
 			heap.push(next_max->right, next_max->right->sum);
 
-		next_max = (HeapNode*) heap.pop();
-		current_income += next_max->sum;
+		next_node = heap.pop();/*pop the HeapNode.This heap has some of the original HeapNodes as data*/
+		next_sum = 	next_node->sum;
+		next_max = (HeapNode*) next_node->data;/*get the data of the HeapNode.which is another heapnode (a bit strange)*/
+
+		next_num = (Number*) next_max->data;/*finally get the number which is data for the original heapnodes*/
+		next_num->print();cout << " " << next_sum / income * 100 << "% (sum: " << next_sum << ")" << endl;
+
+		delete next_node;
+		current_income += next_sum;
 	}
 
+}
+
+
+void MaxHeap::delete_datas()
+{
+	if (root != NULL)
+		root->delete_chaptrs();
+}
+
+/*data compare functions*/
+/*return 0 if data are equal,0 otherwise*/
+int number_compare(void* data1, void* data2)
+{
+	Number* num1 = (Number*) data1;
+	Number* num2 = (Number*) data2;
+
+	return (num1 == num2);
+}
+
+
+int string_compare(void* data1, void* data2)
+{
+	char* str1 = (char*) data1;
+	char* str2 = (char*) data2;
+
+	return (strcmp(str1, str2) == 0);
+}
+
+
+void number_print(void* data)
+{
+	Number* number = (Number*) data;
+	number->print();
+}
+
+
+void string_print(void* data)
+{
+	char* str = (char*) data;
+	cout << str;
 }

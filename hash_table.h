@@ -10,6 +10,7 @@
 
 #include "cdr_info.h"
 #include "superfasthash.h"
+#include "heap.h"
 #include <cstdlib>
 #include <iostream>
 
@@ -53,12 +54,13 @@ class Call_infos
 class Bucket_entry
 {
 	public:
-		Number number1;
+		Number* number1;
+		HeapNode* heap_node;
 		Call_infos * first_infos;
 		Call_infos * last_infos;
 		int infos_per_entry;
 
-		Bucket_entry(Number& num1, int& max_infos);
+		Bucket_entry(char* strnum1, int& max_infos);
 		~Bucket_entry();
 
 		void print();
@@ -69,6 +71,9 @@ class Bucket_entry
 		int insert_info(Number& num2, CdrInfo* info);
 		int delete_info(char* cdrid, int free_info);
 		bool isEmpty() { return first_infos == NULL; };
+
+		void setHeapNode(HeapNode * node);
+		HeapNode* getHeapNode();
 
 		int communicated(Number number2);
 

@@ -25,15 +25,127 @@ uint32_t simple_hash(const char* num, int len)
 }
 
 
-int execute_input(FILE* input, int max_args, int max_len, Hash_table** ht1, Hash_table** ht2/*,Heap* hp*/)
+float* read_charges(FILE* input)
 {
-	char* line = new char[max_args*20];
-	char** words = new char*[max_args];
-	int commands_count = 0;
+	float* charges = new float[5];
+	for (int i=0;i<5;i++)
+		charges[i] = -1;
+
+	char* line = new char[100];
+	char** words = new char*[4];
+	int count = 0;
 
 	while (1)
 	{
 		if (fgets(line,100, input) == NULL)
+			break;
+
+		/*ignore blank lines or lines that start with '#'*/
+		if (strlen(line) == 0 || line[0] == '#')
+			continue;
+
+		/*print the line you just read*/
+//		cout << line << "\n";
+
+		if (count == 5)
+		{
+			delete[] charges;
+			charges = NULL;
+			cout << "Invalid charges file!Too many charges!(should be 5)" << endl;
+
+			return NULL;
+		}
+
+		/*split line to words*/
+		words[0] = strtok(line,";");
+		int index = 0;
+
+		do
+		{
+			index++;
+			words[index] = strtok(NULL,";\n");
+		}
+		while(words[index] != NULL);
+
+		if ( !strcmp(words[0],"0") )
+		{
+			if (charges[0] == -1)
+				charges[0] = atof(words[2]);
+			else
+				cout << "Error.Multiple charges for type 0";
+		}
+		else
+		{
+			if ( !strcmp(words[0],"1") )
+			{
+				if ( !strcmp(words[1],"1") )
+				{
+					if (charges[1] == -1)
+						charges[1] = atof(words[2]);
+					else
+						cout << "Error.Multiple charges for type 1,tarrif 1";
+				}
+				else if ( !strcmp(words[1],"2") )
+				{
+					if (charges[2] == -1)
+						charges[2] = atof(words[2]);
+					else
+						cout << "Error.Multiple charges for type 1,tarrif 2";
+				}
+			}
+			else if ( !strcmp(words[0],"2") )
+			{
+				if ( !strcmp(words[1],"1") )
+				{
+					if (charges[3] == -1)
+						charges[3] = atof(words[2]);
+					else
+						cout << "Error.Multiple charges for type 2,tarrif 1";
+				}
+				else if ( !strcmp(words[1],"2") )
+				{
+					if (charges[4] == -1)
+						charges[4] = atof(words[2]);
+					else
+						cout << "Error.Multiple charges for type 2,tarrif 2";
+				}
+			}
+		}
+
+		/*Debug.print words we read/split*/
+//		for (int i=0;i<index;i++)
+//			cout << words[i] << endl;
+
+		count++;
+	}
+
+	delete[] words;
+	delete[] line;
+
+	if (count < 5)
+	{
+		delete[] charges;
+		charges = NULL;
+		cout << "Invalid charges file!Not enough charges!(should be 5)" << endl;
+	}
+
+//	for (int i=0;i<5;i++)
+//		cout << charges[i] << endl;
+
+
+	return charges;
+}
+
+
+int execute_input(FILE* input, int max_args, int max_len, Hash_table** ht1, Hash_table** ht2, MaxHeap** hp, float* charges)
+{
+	char* line = new char[max_len];
+	char** words = new char*[max_args+1];
+	int commands_count = 0;
+
+	while (1)
+	{
+		if (fgets(line,max_len, input) == NULL)
 			break;
 
 		/*ignore blank lines*/
@@ -60,7 +172,7 @@ int execute_input(FILE* input, int max_args, int max_len, Hash_table** ht1, Hash
 //		for (int i=0;i<index;i++)
 //			cout << words[i] << endl;
 
-		if (execute_command(words, ht1, ht2) == 1)
+		if (execute_command(words, ht1, ht2, hp, charges) == 1)
 			break;
 
 	}
@@ -72,7 +184,7 @@ int execute_input(FILE* input, int max_args, int max_len, Hash_table** ht1, Hash
 }
 
 
-int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*/)
+int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2, MaxHeap** hp, float* charges)
 {
 	CdrInfo* info;
 	char** record_fields;
@@ -80,11 +192,14 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 	Date* date1 = NULL;
 	Time* time2 = NULL;
 	Date* date2 = NULL;
+	Bucket_entry* entry;
+	HeapNode* heapnode;
 	int arg_count;
 	int max_buckets1;
 	int max_buckets2;
 	int bucket_size;
 	int max_infos;
+	float sum = 0;
 
 	if ( strcmp(words[0],"insert") == 0)
 	{
@@ -105,10 +220,72 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 
 		info = new CdrInfo(record_fields[0], record_fields[1], record_fields[2], record_fields[3], record_fields[4],record_fields[5], record_fields[6], record_fields[7], record_fields[8]);
 
-		(*ht1)->insert_info(record_fields[1], record_fields[1], record_fields[2], info);
-		(*ht2)->insert_info(record_fields[2], record_fields[2], record_fields[1], info);
+		if (info->fault_condition < 200 || info->fault_condition > 299)
+		{/*If there was some error with the call,just insert into hash tables.No charges to add at heap*/
+			(*ht1)->insert_info(record_fields[1], record_fields[1], record_fields[2], info);
+			(*ht2)->insert_info(record_fields[2], record_fields[2], record_fields[1], info);
+		}
+		else
+		{/*calculate the charge for that call (sum)*/
+			if (info->type == 0)
+			{
+				sum = charges[0];
+			}
+			else if (info->type == 1)
+			{
+				if (info->tarrif == 1)
+				{
+					sum = (float) info->duration * charges[1];
+				}
+				else if (info->tarrif == 2)
+				{
+					sum = (float) info->duration * charges[2];
+				}
+			}
+			else if (info->type == 2)
+			{
+				if (info->tarrif == 1)
+				{
+					sum = (float) info->duration * charges[3];
+				}
+				else if (info->tarrif == 2)
+				{
+					sum = (float) info->duration * charges[4];
+				}
+			}
+			else
+			{
+				cout << "Unknown call type!No charge!\n";
+			}
 
-		/*heap stuff*/
+			/*check if an entry for this caller already exists*/
+			entry = (*ht1)->get_entry(record_fields[1], record_fields[1]);
+			if ( entry != NULL)/*if it does*/
+			{
+				heapnode = entry->getHeapNode();/*get the pointer to the callers heap node so we can update it*/
+				if (heapnode == NULL)/*if its null,it means that entry exists BUT heapnode doesnt (because of error code,it wasnt charged*/
+				{
+					heapnode = (*hp)->push(entry->number1, sum);/*So push it now for the first time.no error code now*/
+					entry->setHeapNode(heapnode);/*save the pointer to it for next time*/
+				}
+				else
+				{
+					(*hp)->update(heapnode, sum);
+				}
+				/*Now insert at the hashtable (if we did it before checking if its there..it would be there*/
+				(*ht1)->insert_info(record_fields[1], record_fields[1], record_fields[2], info);
+				(*ht2)->insert_info(record_fields[2], record_fields[2], record_fields[1], info);
+			}
+			else/*entry does not exist.push a new heapnode at heap for this (new) caller after inserting to hash table*/
+			{
+				(*ht1)->insert_info(record_fields[1], record_fields[1], record_fields[2], info);
+				(*ht2)->insert_info(record_fields[2], record_fields[2], record_fields[1], info);
+				entry = (*ht1)->get_entry(record_fields[1], record_fields[1]);
+				heapnode = (*hp)->push(entry->number1, sum);/*points to the same number1 as the entry*/
+				entry->setHeapNode(heapnode);/*save the pointer to the node for next inserts*/
+			}
+		}
+
 
 		delete[] record_fields;
 	}
@@ -257,13 +434,11 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 	}
 	else if ( strcmp(words[0],"topdest") == 0)
 	{
-
-
+		topdest(words[1], *ht1);
 	}
 	else if ( strcmp(words[0],"top") == 0)
 	{
-
-
+		(*hp)->topk(atof(words[1]));
 	}
 	else if ( strcmp(words[0],"bye") == 0)
 	{
@@ -280,9 +455,10 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 		(*ht2)->free_infos();
 		delete *ht1;
 		delete *ht2;
-		/*delete hp*/
+		delete *hp;
 		*ht1 = new Hash_table(&hash, max_buckets1, bucket_size, max_infos);
 		*ht2 = new Hash_table(&hash, max_buckets2, bucket_size, max_infos);
+		*hp = new MaxHeap(number_compare, number_print);/*create a heap with Numbers*/
 		/*create heap*/
 
 
@@ -321,7 +497,7 @@ int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*
 		(*ht2)->free_infos();
 		delete *ht1;
 		delete *ht2;
-		/*delete hp*/
+		delete *hp;
 
 		return 1;
 	}

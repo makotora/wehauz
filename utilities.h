@@ -29,5 +29,4 @@ class PathStack
 		char pop();
 		void print();
 };
-
 #endif /* UTILITIES_H_ */

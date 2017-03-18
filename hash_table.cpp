@@ -12,9 +12,10 @@
 using namespace std;
 
 /*Class Bucket_entry*/
-Bucket_entry::Bucket_entry(Number& num1, int& max_infos)
-:number1(num1), infos_per_entry(max_infos)
+Bucket_entry::Bucket_entry(char* strnum1, int& max_infos)
+:heap_node(NULL), infos_per_entry(max_infos)
 {
+	number1 = new Number(strnum1);
 	first_infos = new Call_infos(max_infos);
 	last_infos = first_infos;
 }
@@ -24,11 +25,13 @@ Bucket_entry::~Bucket_entry()
 {
 	if (first_infos != NULL)
 		delete first_infos;/*Call infos destructor will recursively delete all next infos*/
+
+	delete number1;
 }
 
 void Bucket_entry::print()
 {
-	cout << "\t\t| "; number1.print(); cout << " |\n";;
+//	cout << "\t\t| "; number1->print(); cout << " |\n";;
 	Call_infos* current = first_infos;
 	int count = 0;
 
@@ -41,7 +44,7 @@ void Bucket_entry::print()
 }
 void Bucket_entry::print_range(Time* time1, Date* date1, Time* time2, Date* date2)
 {
-	//cout << "\n\t\t| "; number1.print(); cout << " |\n\n";
+	//cout << "\n\t\t| "; number1->print(); cout << " |\n\n";
 	Call_infos* current = first_infos;
 
 	while (current != NULL)
@@ -174,6 +177,13 @@ int Bucket_entry::communicated(Number number2)
 }
 
 
+void Bucket_entry::setHeapNode(HeapNode * node)
+{ heap_node = node; }
+
+
+HeapNode* Bucket_entry::getHeapNode()
+{ return heap_node; }
+
 /*Class Bucket*/
 Bucket::Bucket(int& max_entries, int& max_infos)
 :count(0), next(NULL), entries_per_bucket(max_entries), infos_per_entry(max_infos)
@@ -219,7 +229,7 @@ int Bucket::find_entry(Number& num1)
 	int i;
 	for (i=0;i<count;i++)
 	{
-		if (entries[i]->number1 == num1)
+		if ( *(entries[i]->number1) == num1)
 			return i;
 	}
 
@@ -372,7 +382,7 @@ int Hash_table::insert_info(char* hash_key, char* strnum1, char* strnum2, CdrInf
 			current = current->next;
 		}
 
-		new_entry = new Bucket_entry(num1, infos_per_entry);
+		new_entry = new Bucket_entry(strnum1, infos_per_entry);
 		new_entry->insert_info(num2, info);
 		current->entries[current->count] = new_entry;
 		(current->count)++;
@@ -412,45 +422,50 @@ int Hash_table::delete_info(char* hash_key, char* strnum1, char* cdrid, int free
 		current_entry = current_bucket->entries[bucket_entry];
 		current_entry->delete_info(cdrid, free_info);
 
-		if ( current_entry->isEmpty() )
-		{
-			//cout << "Bucket is now empty.Deleting bucket\n";
-			delete current_entry;
-			/*REPLACE THIS BUCKET'S DELETED ENTRY WITH THE LAST ENTRY IN THE LIST OF BUCKETS (delete bucket if last got empty)*/
-
-			/*find last bucket*/
-			last_bucket = current_bucket;/*I could also start from first_bucket but lets (maybe) save some time..Continue from where we left off*/
-			while (last_bucket->next != NULL)
-				last_bucket = last_bucket->next;
-
-			current_entry = last_bucket->entries[last_bucket->count - 1];
-			last_bucket->entries[last_bucket->count - 1] = NULL;
-			(last_bucket->count)--;
-
-			/*If last bucket is empty.Delete it*/
-			if (last_bucket->count == 0)
-			{
-				if (first_bucket == last_bucket)/*if first bucket is last bucket.we are deleting the only bucket entry in this bucket*/
-				{/*so delete this (now empty) bucket and note that hash_table has no buckets anymore*/
-					delete first_bucket;
-					//cout << "deleting first bucket!\n";
-					buckets[bucket_num] = NULL;/*Make it NULL for the hash_table*/
-				}
-				else
-				{/*make previous bucket of last have no next.delete last_bucket*/
-					/*find previous bucket of last*/
-					current_bucket = first_bucket;
-					while (current_bucket->next != last_bucket)
-						current_bucket = current_bucket->next;
-					//cout << "deleting last bucket!\n";
-					current_bucket->next = NULL;
-					delete last_bucket;
-				}
-			}
-
-		}
-
 		return 0;
+
+	/*Following commented code used to delete a bucket_entry if after a delete it had no entries*/
+	/*I decided not to do it so as to keep they entries for customers.even if they are empty*/
+		//
+//		if ( current_entry->isEmpty() )
+//		{
+//			//cout << "Bucket is now empty.Deleting bucket\n";
+//			delete current_entry;
+//			/*REPLACE THIS BUCKET'S DELETED ENTRY WITH THE LAST ENTRY IN THE LIST OF BUCKETS (delete bucket if last got empty)*/
+//
+//			/*find last bucket*/
+//			last_bucket = current_bucket;/*I could also start from first_bucket but lets (maybe) save some time..Continue from where we left off*/
+//			while (last_bucket->next != NULL)
+//				last_bucket = last_bucket->next;
+//
+//			current_entry = last_bucket->entries[last_bucket->count - 1];
+//			last_bucket->entries[last_bucket->count - 1] = NULL;
+//			(last_bucket->count)--;
+//
+//			/*If last bucket is empty.Delete it*/
+//			if (last_bucket->count == 0)
+//			{
+//				if (first_bucket == last_bucket)/*if first bucket is last bucket.we are deleting the only bucket entry in this bucket*/
+//				{/*so delete this (now empty) bucket and note that hash_table has no buckets anymore*/
+//					delete first_bucket;
+//					//cout << "deleting first bucket!\n";
+//					buckets[bucket_num] = NULL;/*Make it NULL for the hash_table*/
+//				}
+//				else
+//				{/*make previous bucket of last have no next.delete last_bucket*/
+//					/*find previous bucket of last*/
+//					current_bucket = first_bucket;
+//					while (current_bucket->next != last_bucket)
+//						current_bucket = current_bucket->next;
+//					//cout << "deleting last bucket!\n";
+//					current_bucket->next = NULL;
+//					delete last_bucket;
+//				}
+//			}
+//
+//		}
+//
+//		return 0;
 	}
 	else
 	{

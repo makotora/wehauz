@@ -13,7 +13,8 @@
 using namespace std;
 
 uint32_t simple_hash(const char* num, int len);
-int execute_input(FILE* input, int max_args, int max_len, Hash_table** ht1, Hash_table** ht2/*,Heap* hp*/);
-int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2/*,Heap* hp*/);
+float* read_charges(FILE* input);
+int execute_input(FILE* input, int max_args, int max_len, Hash_table** ht1, Hash_table** ht2, MaxHeap** hp, float* charges);
+int execute_command(char ** words,Hash_table** ht1, Hash_table** ht2, MaxHeap** hp, float* charges);
 
 #endif /* INPUT_H_ */

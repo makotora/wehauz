@@ -44,5 +44,6 @@ class CallGraph
 };
 
 void indist(char* caller1, char* caller2, Hash_table* ht1, Hash_table* ht2);
+void topdest(char* caller, Hash_table* ht1);
 
 #endif /* CALL_STATS_H_ */

@@ -21,7 +21,10 @@ Number::Number(char* number)
 
 	if ( strlen(number) != 14 )
 	{
+		strcpy(area, "000");
+		strcpy(area, "0000000000");
 		cout << "Invalid  phone number\n";
+		delete[] copy;
 		return;
 	}
 
@@ -29,7 +32,10 @@ Number::Number(char* number)
 
 	if ( strlen(token) != 3 )
 	{
+		strcpy(area, "000");
+		strcpy(area, "0000000000");
 		cout << "Invalid  phone number\n";
+		delete[] copy;
 		return;
 	}
 	else
@@ -82,6 +88,9 @@ Date::Date(char * date)
 {
 	if ( strlen(date) != 8 )
 	{
+		day = 0;
+		month = 0;
+		year = 0;
 		cout << "Invalid date\n";
 		return;
 	}
@@ -142,6 +151,9 @@ Time::Time(char* time)
 	if ( strlen(time) != 5 )
 	{
 		cout << "Invalid  time\n";
+		hour = 0;
+		minute = 0;
+		delete[] copy;
 		return;
 	}
 
@@ -150,6 +162,9 @@ Time::Time(char* time)
 	if ( strlen(token) != 2 )
 	{
 		cout << "Invalid  time\n";
+		hour = 0;
+		minute = 0;
+		delete[] copy;
 		return;
 	}
 	else
@@ -161,6 +176,9 @@ Time::Time(char* time)
 
 	if ( strlen(token) != 2)
 	{
+		hour = 0;
+		minute = 0;
+		delete[] copy;
 		cout << "Invalid  phone number\n";
 		return;
 	}
